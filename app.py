@@ -17,9 +17,13 @@ SUBMISSIONS_DIR = BASE_DIR / "submissions"
 REPORTS_DIR = BASE_DIR / "reports"
 FINAL_REPORT_PATH = REPORTS_DIR / "final_report.txt"
 COMPILE_ERROR_PATH = BASE_DIR / "compile_error.txt"
-CHECKER_EXE = BASE_DIR / "checker.exe"
 MAIN_CPP = BASE_DIR / "main.cpp"
 TESTCASES_FILE = BASE_DIR / "testcases.txt"
+
+# Cross-platform execution binary name (.exe on Windows, extensionless ELF on Linux)
+IS_WINDOWS = sys.platform == "win32"
+CHECKER_EXE_NAME = "checker.exe" if IS_WINDOWS else "checker"
+CHECKER_EXE = BASE_DIR / CHECKER_EXE_NAME
 
 app = Flask(
     __name__,
@@ -28,9 +32,45 @@ app = Flask(
 )
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload limit
 
+# Enable CORS for decoupled frontend deployment (e.g. Vercel dashboard accessing Render API)
+try:
+    from flask_cors import CORS
+    cors_origins = os.environ.get("CORS_ORIGINS", "*")
+    if cors_origins != "*":
+        cors_origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}}, supports_credentials=True)
+except ImportError:
+    pass
+
+
+@app.after_request
+def add_cors_headers(response):
+    """Ensure CORS headers are attached on all /api/ responses for cross-origin frontend support."""
+    if request.path.startswith("/api/"):
+        origin = request.headers.get("Origin")
+        allowed_origins = os.environ.get("CORS_ORIGINS", "*")
+        if allowed_origins == "*":
+            response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
+        elif origin:
+            allowed_list = [o.strip() for o in allowed_origins.split(",") if o.strip()]
+            if origin in allowed_list:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    return response
+
+
+@app.route("/api/<path:path>", methods=["OPTIONS"])
+def api_options_handler(path):
+    """Handle pre-flight CORS requests from cross-origin frontends."""
+    return "", 204
+
+
 # Ensure directories exist
 SUBMISSIONS_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
+
 
 
 DEFAULT_TESTS = [
@@ -323,7 +363,7 @@ def api_status():
             "test_cases_count": len(test_cases),
             "report_exists": report_ready,
             "last_run": last_run,
-            "os": "Windows",
+            "os": "Windows" if IS_WINDOWS else "Linux",
         }
     )
 
@@ -338,10 +378,10 @@ def api_results():
 
 @app.route("/api/run-checker", methods=["POST"])
 def api_run_checker():
-    """Compiles main.cpp if needed and runs checker.exe with latest test cases."""
+    """Compiles main.cpp if needed and runs checker with latest test cases."""
     start_time = time.time()
 
-    # Always ensure checker.exe is up to date with main.cpp
+    # Always ensure checker is up to date with main.cpp
     needs_compile = not CHECKER_EXE.exists()
     if not needs_compile and MAIN_CPP.exists():
         if MAIN_CPP.stat().st_mtime > CHECKER_EXE.stat().st_mtime:
@@ -349,7 +389,7 @@ def api_run_checker():
 
     if needs_compile:
         try:
-            compile_cmd = ["g++", "-std=c++11", "main.cpp", "-o", "checker.exe"]
+            compile_cmd = ["g++", "-std=c++11", "main.cpp", "-o", CHECKER_EXE_NAME]
             build_res = subprocess.run(
                 compile_cmd,
                 cwd=str(BASE_DIR),
@@ -363,12 +403,17 @@ def api_run_checker():
                     jsonify(
                         {
                             "success": False,
-                            "error": "Failed to compile main.cpp into checker.exe",
+                            "error": f"Failed to compile main.cpp into {CHECKER_EXE_NAME}",
                             "details": build_res.stderr,
                         }
                     ),
                     500,
                 )
+            if not IS_WINDOWS and CHECKER_EXE.exists():
+                try:
+                    os.chmod(str(CHECKER_EXE), 0o755)
+                except Exception:
+                    pass
         except Exception as e:
             return (
                 jsonify(
@@ -381,7 +426,7 @@ def api_run_checker():
             )
 
     # Check if there are .cpp files in submissions
-    cpp_files = list(SUBMISSIONS_DIR.glob("*.cpp"))
+    cpp_files = sorted([f.name for f in SUBMISSIONS_DIR.glob("*.cpp")])
     if not cpp_files:
         return (
             jsonify(
@@ -393,10 +438,19 @@ def api_run_checker():
             400,
         )
 
-    # Execute checker.exe in Windows environment
+    # Pre-populate filelist.txt to guarantee consistent file discovery across all OS environments
     try:
+        with open(BASE_DIR / "filelist.txt", "w", encoding="utf-8") as fl:
+            for fname in cpp_files:
+                fl.write(f"{fname}\n")
+    except Exception as e:
+        print(f"Warning: could not write filelist.txt: {e}")
+
+    # Execute checker binary
+    try:
+        checker_cmd = [str(CHECKER_EXE)] if IS_WINDOWS else [f"./{CHECKER_EXE_NAME}"]
         run_res = subprocess.run(
-            [str(CHECKER_EXE)],
+            checker_cmd,
             cwd=str(BASE_DIR),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -528,18 +582,20 @@ def api_delete_submission(filename):
 
         # Clean up any generated binary executable if present in submissions or base directory
         stem = target.stem
-        sub_exe = SUBMISSIONS_DIR / f"{stem}.exe"
-        if sub_exe.is_file():
-            try:
-                sub_exe.unlink()
-            except Exception:
-                pass
+        for ext in [".exe", ""]:
+            sub_exe = SUBMISSIONS_DIR / f"{stem}{ext}"
+            if sub_exe.is_file():
+                try:
+                    sub_exe.unlink()
+                except Exception:
+                    pass
 
-        for exe in BASE_DIR.glob(f"{stem}.exe"):
-            try:
-                exe.unlink()
-            except Exception:
-                pass
+        for exe in BASE_DIR.glob(f"{stem}*"):
+            if exe.is_file() and (exe.suffix == ".exe" or not exe.suffix):
+                try:
+                    exe.unlink()
+                except Exception:
+                    pass
 
         return jsonify({
             "success": True,
@@ -1343,10 +1399,11 @@ def api_testcases_reset():
 
 
 if __name__ == "__main__":
-    # Local only execution
     port = int(os.environ.get("PORT", 5000))
+    host = os.environ.get("HOST", "0.0.0.0" if (os.environ.get("RENDER") or os.environ.get("PORT")) else "127.0.0.1")
     print("=" * 60)
     print("  Intelligent Assignment Checker Dashboard")
-    print(f"  Running locally at: http://127.0.0.1:{port}")
+    print(f"  Running at: http://{host}:{port}")
     print("=" * 60)
-    app.run(host="127.0.0.1", port=port, debug=True)
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() in ("true", "1")
+    app.run(host=host, port=port, debug=debug_mode)

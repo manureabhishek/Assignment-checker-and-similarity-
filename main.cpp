@@ -693,8 +693,24 @@ int main() {
     cout << "   INTELLIGENT ASSIGNMENT CHECKER - C++" << endl;
     cout << "==========================================" << endl;
 
+#ifdef _WIN32
     system("mkdir reports 2>nul");
-    system("dir /b submissions\\*.cpp > filelist.txt");
+    system("dir /b submissions\\*.cpp > filelist.txt 2>nul");
+    string pathSep = "\\";
+    string execPrefix = ".\\";
+    string exeExt = ".exe";
+#else
+    system("mkdir -p reports 2>/dev/null");
+    // Generate filelist.txt on Linux/POSIX if not already populated
+    ifstream checkList("filelist.txt");
+    if (!checkList.is_open() || checkList.peek() == ifstream::traits_type::eof()) {
+        system("ls -1 submissions/*.cpp 2>/dev/null | sed 's|.*/||' > filelist.txt 2>/dev/null || ls -1 submissions/*.cpp > filelist.txt 2>/dev/null");
+    }
+    if (checkList.is_open()) checkList.close();
+    string pathSep = "/";
+    string execPrefix = "./";
+    string exeExt = "";
+#endif
 
     ifstream listFile("filelist.txt");
 
@@ -709,6 +725,12 @@ int main() {
     while (getline(listFile, filename)) {
         if (!filename.empty() && filename[filename.size() - 1] == '\r') {
             filename.erase(filename.size() - 1);
+        }
+
+        // Clean directory prefix if present in filelist (e.g. submissions/ or submissions\)
+        size_t lastSlash = filename.find_last_of("/\\");
+        if (lastSlash != string::npos) {
+            filename = filename.substr(lastSlash + 1);
         }
 
         if (!filename.empty()) {
@@ -787,7 +809,7 @@ int main() {
     cout << "\nPRIORITY QUEUE (MAX HEAP)" << endl;
 
     for (size_t i = 0; i < files.size(); i++) {
-        string path = "submissions\\" + files[i];
+        string path = "submissions" + pathSep + files[i];
         string source = readFile(path);
 
         int priority = static_cast<int>(source.size());
@@ -811,7 +833,7 @@ int main() {
 
     for (size_t i = 0; i < processingOrder.size(); i++) {
         string currentFile = processingOrder[i].filename;
-        string sourcePath = "submissions\\" + currentFile;
+        string sourcePath = "submissions" + pathSep + currentFile;
 
         cout << "\nProcessing: " << currentFile << endl;
 
@@ -847,7 +869,7 @@ int main() {
 
         // Compile student program
         string executable =
-            "student_program_" + to_string(i + 1) + ".exe";
+            "student_program_" + to_string(i + 1) + exeExt;
 
         string compileCommand =
             "g++ -std=c++11 \"" + sourcePath +
@@ -875,7 +897,7 @@ int main() {
                 inputFile.close();
 
                 string runCommandText =
-                    ".\\" + executable +
+                    execPrefix + executable +
                     " < \"" + inputPath +
                     "\" > \"" + outputPath + "\"";
 
