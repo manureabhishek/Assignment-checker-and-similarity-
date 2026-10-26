@@ -1,0 +1,183 @@
+INTELLIGENT ASSIGNMENT CHECKER - FINAL REPORT
+==============================================
+
+SUBMISSION RESULTS
+------------------
+
+File: student3.cpp
+Compilation: Successful
+Bracket Check: Balanced
+Tests Passed: 4/4
+Correctness: 100%
+Test Details:
+  Test 1: PASS | Input: [3 5] | Expected: [5] | Actual: [5]
+  Test 2: PASS | Input: [9 2] | Expected: [9] | Actual: [9]
+  Test 3: PASS | Input: [-4 7] | Expected: [7] | Actual: [7]
+  Test 4: PASS | Input: [10 25] | Expected: [25] | Actual: [25]
+
+File: student5.cpp
+Compilation: Successful
+Bracket Check: Balanced
+Tests Passed: 4/4
+Correctness: 100%
+Test Details:
+  Test 1: PASS | Input: [3 5] | Expected: [5] | Actual: [5]
+  Test 2: PASS | Input: [9 2] | Expected: [9] | Actual: [9]
+  Test 3: PASS | Input: [-4 7] | Expected: [7] | Actual: [7]
+  Test 4: PASS | Input: [10 25] | Expected: [25] | Actual: [25]
+
+File: student7.cpp
+Compilation: Failed
+Bracket Check: Balanced
+Tests Passed: 0/4
+Correctness: 0%
+Compile Error:
+submissions\student7.cpp: In function 'int main()':
+submissions\student7.cpp:13:1: error: expected ';' before '}' token
+ }
+ ^
+
+
+File: student1.cpp
+Compilation: Successful
+Bracket Check: Balanced
+Tests Passed: 4/4
+Correctness: 100%
+Test Details:
+  Test 1: PASS | Input: [3 5] | Expected: [5] | Actual: [5]
+  Test 2: PASS | Input: [9 2] | Expected: [9] | Actual: [9]
+  Test 3: PASS | Input: [-4 7] | Expected: [7] | Actual: [7]
+  Test 4: PASS | Input: [10 25] | Expected: [25] | Actual: [25]
+
+File: student2.cpp
+Compilation: Successful
+Bracket Check: Balanced
+Tests Passed: 4/4
+Correctness: 100%
+Test Details:
+  Test 1: PASS | Input: [3 5] | Expected: [5] | Actual: [5]
+  Test 2: PASS | Input: [9 2] | Expected: [9] | Actual: [9]
+  Test 3: PASS | Input: [-4 7] | Expected: [7] | Actual: [7]
+  Test 4: PASS | Input: [10 25] | Expected: [25] | Actual: [25]
+
+File: student4.cpp
+Compilation: Successful
+Bracket Check: Balanced
+Tests Passed: 4/4
+Correctness: 100%
+Test Details:
+  Test 1: PASS | Input: [3 5] | Expected: [5] | Actual: [5]
+  Test 2: PASS | Input: [9 2] | Expected: [9] | Actual: [9]
+  Test 3: PASS | Input: [-4 7] | Expected: [7] | Actual: [7]
+  Test 4: PASS | Input: [10 25] | Expected: [25] | Actual: [25]
+
+PAIRWISE SIMILARITY
+-------------------
+
+student3.cpp vs student5.cpp
+Token Similarity: 51.8987%
+Tree Similarity: 52.5%
+Graph Similarity: 25%
+Overall Similarity: 45.3244%
+Status: No High Similarity Detected
+
+student3.cpp vs student7.cpp
+Token Similarity: 50.9554%
+Tree Similarity: 51.5723%
+Graph Similarity: 23.7624%
+Overall Similarity: 44.3114%
+Status: No High Similarity Detected
+
+student3.cpp vs student1.cpp
+Token Similarity: 49.3151%
+Tree Similarity: 50%
+Graph Similarity: 24.1758%
+Overall Similarity: 43.2015%
+Status: No High Similarity Detected
+
+student3.cpp vs student2.cpp
+Token Similarity: 44.4444%
+Tree Similarity: 45.2055%
+Graph Similarity: 23.6559%
+Overall Similarity: 39.4376%
+Status: No High Similarity Detected
+
+student3.cpp vs student4.cpp
+Token Similarity: 47.5524%
+Tree Similarity: 48.2759%
+Graph Similarity: 23.913%
+Overall Similarity: 41.8235%
+Status: No High Similarity Detected
+
+student5.cpp vs student7.cpp
+Token Similarity: 99.1597%
+Tree Similarity: 99.1736%
+Graph Similarity: 96.2264%
+Overall Similarity: 98.4298%
+Status: Potentially Similar
+
+student5.cpp vs student1.cpp
+Token Similarity: 62.963%
+Tree Similarity: 63.6364%
+Graph Similarity: 27.7778%
+Overall Similarity: 54.335%
+Status: No High Similarity Detected
+
+student5.cpp vs student2.cpp
+Token Similarity: 64.1509%
+Tree Similarity: 64.8148%
+Graph Similarity: 32.3944%
+Overall Similarity: 56.3778%
+Status: No High Similarity Detected
+
+student5.cpp vs student4.cpp
+Token Similarity: 68.5714%
+Tree Similarity: 69.1589%
+Graph Similarity: 27.3973%
+Overall Similarity: 58.4247%
+Status: No High Similarity Detected
+
+student7.cpp vs student1.cpp
+Token Similarity: 61.6822%
+Tree Similarity: 62.3853%
+Graph Similarity: 26.0274%
+Overall Similarity: 52.9443%
+Status: No High Similarity Detected
+
+student7.cpp vs student2.cpp
+Token Similarity: 62.8571%
+Tree Similarity: 63.5514%
+Graph Similarity: 30.5556%
+Overall Similarity: 54.9553%
+Status: No High Similarity Detected
+
+student7.cpp vs student4.cpp
+Token Similarity: 69.2308%
+Tree Similarity: 69.8113%
+Graph Similarity: 25.6757%
+Overall Similarity: 58.4871%
+Status: No High Similarity Detected
+
+student1.cpp vs student2.cpp
+Token Similarity: 65.9574%
+Tree Similarity: 66.6667%
+Graph Similarity: 32.2581%
+Overall Similarity: 57.7099%
+Status: No High Similarity Detected
+
+student1.cpp vs student4.cpp
+Token Similarity: 88.172%
+Tree Similarity: 88.4211%
+Graph Similarity: 72.3404%
+Overall Similarity: 84.2764%
+Status: Potentially Similar
+
+student2.cpp vs student4.cpp
+Token Similarity: 68.1319%
+Tree Similarity: 68.8172%
+Graph Similarity: 29.6875%
+Overall Similarity: 58.6921%
+Status: No High Similarity Detected
+
+NOTE: Similarity is an indicator only; it does not prove plagiarism.
+This is a simplified academic prototype.
